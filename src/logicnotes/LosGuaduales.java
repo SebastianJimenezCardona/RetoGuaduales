@@ -4,129 +4,168 @@ import java.util.Scanner;
 
 public class LosGuaduales {
 
+    static Scanner sc = new Scanner(System.in);
+
     public static void main(String[] args) {
 
-        Scanner sc = new Scanner(System.in);
-
-        int[] apartamento = new int[6];
-
+        double[] consumos = new double[6];
         int opcion;
 
         do {
-
-            opcion = mostrarMenu(sc);
+            mostrarMenu();
+            opcion = sc.nextInt();
 
             switch (opcion) {
-
                 case 1:
-                    registrarConsumo(sc, apartamento);
+                    registrarConsumo(consumos);
                     break;
-
                 case 2:
-                    System.out.println(consultarFactura(sc, apartamento));
+                    consultarFactura(consumos);
                     break;
-
                 case 3:
-                    verReporte(apartamento);
+                    generarReporte(consumos);
                     break;
-
                 case 4:
-                    System.out.println("Saliendo...");
+                    System.out.println("Hasta luego");
                     break;
-
                 default:
-                    System.out.println("Opción no válida. Elige del 1 al 4.");
+                    System.out.println("Opción inválida");
             }
 
         } while (opcion != 4);
-
-        sc.close();
     }
 
-
-    public static int mostrarMenu(Scanner sc) {
-
+    static void mostrarMenu() {
         System.out.println();
-        System.out.println("----------- MENÚ -----------");
+        System.out.println("===== LOS GUADUALES - CONTROL DE AGUA =====");
         System.out.println("1. Registrar consumo de un apartamento");
         System.out.println("2. Consultar factura de un apartamento");
         System.out.println("3. Ver reporte general del conjunto");
         System.out.println("4. Salir");
-        System.out.println("-----------------------------");
-        System.out.print("Seleccione una opción: ");
-
-        int opcion = sc.nextInt();
-
-        return opcion;
+        System.out.print("Elija una opción: ");
     }
 
+    static void registrarConsumo(double[] consumos) {
 
-    public static int registrarConsumo(Scanner sc, int[] apartamento) {
+        System.out.print("Número de apartamento (1 a 6): ");
+        int apartamento = sc.nextInt();
 
-        System.out.println();
-        System.out.println("Ingrese el número del apartamento del 1 al 6");
+        while (apartamento < 1 || apartamento > 6) {
+            System.out.print("Error, el apartamento debe estar entre 1 y 6. Intente de nuevo: ");
+            apartamento = sc.nextInt();
+        }
 
-        int numeroApartamento = sc.nextInt();
+        System.out.print("Consumo en m3: ");
+        double consumo = sc.nextDouble();
 
-        System.out.println("Ingrese el consumo del apartamento:");
+        while (consumo <= 0) {
+            System.out.print("Error, el consumo debe ser mayor que 0. Intente de nuevo: ");
+            consumo = sc.nextDouble();
+        }
 
-        int valorConsumido = sc.nextInt();
+        consumos[apartamento - 1] = consumo;
 
-        apartamento[numeroApartamento - 1] = valorConsumido;
-
-        System.out.println("Consumo registrado correctamente.");
-
-        return valorConsumido;
+        System.out.println("Consumo registrado para el apartamento " + apartamento);
     }
 
+    static void consultarFactura(double[] consumos) {
 
-    public static int consultarFactura(Scanner sc, int[] apartamento) {
+        System.out.print("Número de apartamento (1 a 6): ");
+        int apartamento = sc.nextInt();
 
-        int valorPequeno = 3000;
-        int valorMediano = 4500;
-        int valorExcesivo = 6000;
-        int consumoTotal;
+        while (apartamento < 1 || apartamento > 6) {
+            System.out.print("Error, el apartamento debe estar entre 1 y 6. Intente de nuevo: ");
+            apartamento = sc.nextInt();
+        }
+
+        double consumo = consumos[apartamento - 1];
+
+        if (consumo == 0) {
+            System.out.println("El apartamento " + apartamento + " no tiene consumo registrado");
+        } else {
+            imprimirFactura(apartamento, consumo);
+        }
+    }
+
+    static void imprimirFactura(int apartamento, double consumo) {
+
+        double cargoFijo = 12000;
+        double tarifa;
+
+        if (consumo <= 10) {
+            tarifa = 3000;
+        } else if (consumo <= 20) {
+            tarifa = 4500;
+        } else {
+            tarifa = 6000;
+        }
+
+        double valorConsumo = consumo * tarifa;
+        double subtotal = cargoFijo + valorConsumo;
+
+        double recargo = 0;
+        if (consumo > 25) {
+            recargo = subtotal * 0.10;
+        }
+
+        double total = subtotal + recargo;
 
         System.out.println();
-        System.out.println("Ingrese el número del apartamento del 1 al 6");
+        System.out.println("----- FACTURA APARTAMENTO " + apartamento + " -----");
+        System.out.println("Consumo: " + consumo + " m3");
+        System.out.println("Tarifa aplicada: $" + tarifa + " por m3");
+        System.out.println("Valor del consumo: $" + valorConsumo);
+        System.out.println("Cargo fijo: $" + cargoFijo);
+        if (consumo > 25) {
+            System.out.println("Recargo (10%): $" + recargo);
+        }
+        System.out.println("Total a pagar: $" + total);
 
-        int numeroApartamento = sc.nextInt();
+        if (consumo > 25) {
+            System.out.println("ALERTA: consumo excesivo");
+        }
+    }
 
-        int valorConsumido = apartamento[numeroApartamento - 1];
+    static void generarReporte(double[] consumos) {
 
-        if (valorConsumido < 10) {
+        double total = 0;
+        int registrados = 0;
+        int sinRegistro = 0;
+        int excesivos = 0;
+        double mayor = 0;
+        int aptoMayor = 0;
 
-            consumoTotal = valorConsumido * valorPequeno;
-            System.out.println("El valor es: " + consumoTotal);
+        for (int i = 0; i < 6; i++) {
+            if (consumos[i] == 0) {
+                sinRegistro = sinRegistro + 1;
+            } else {
+                total = total + consumos[i];
+                registrados = registrados + 1;
 
-        } else if (valorConsumido <= 20) {
+                if (consumos[i] > 25) {
+                    excesivos = excesivos + 1;
+                }
 
-            consumoTotal = valorConsumido * valorMediano;
-            System.out.println("El valor es: " + consumoTotal);
+                if (consumos[i] > mayor) {
+                    mayor = consumos[i];
+                    aptoMayor = i + 1;
+                }
+            }
+        }
 
+        if (registrados == 0) {
+            System.out.println("Aún no hay consumos registrados");
         } else {
 
-            consumoTotal = valorConsumido * valorExcesivo;
-            System.out.println("El valor es: " + consumoTotal + ". El valor es excesivo");
+            double promedio = total / registrados;
 
+            System.out.println();
+            System.out.println("----- REPORTE GENERAL -----");
+            System.out.println("Consumo total: " + total + " m3");
+            System.out.println("Consumo promedio: " + promedio + " m3");
+            System.out.println("Mayor consumo: apartamento " + aptoMayor + " con " + mayor + " m3");
+            System.out.println("Apartamentos sin registro: " + sinRegistro);
+            System.out.println("Apartamentos con consumo excesivo: " + excesivos);
         }
-
-        return consumoTotal;
     }
-
-
-    public static void verReporte(int[] apartamento) {
-
-        int total = 0;
-
-        for (int i = 0; i <= 6; i++) {
-
-            System.out.println("Apartamento " + (i + 1) + ": " + apartamento[i]);
-
-            total = total + apartamento[i];
-        }
-
-        System.out.println("Consumo total: " + total);
-    }
-
 }
